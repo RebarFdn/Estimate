@@ -3,13 +3,65 @@ from pydantic import BaseModel
 from elibrary import Library
 
 # DAta sources
+rebars = {
+    "v": {"type": 'm12', "spacing": 0.4, "unit": 'm'},
+    "h": {"type": 'm10', "spacing": 0.6, "unit": 'm'}
 
+}
 openings = [
     {'tag': 'window-1', "width": 1.6, "height": 1.2, "amt": 2, 'unit': 'm'},
     {'tag': 'window-2', "width": .6, "height": .6, "amt": 1, 'unit': 'm'},
     {'tag': 'door-1', "width": 0.96, "height": 2.1, "amt": 1, 'unit': 'm'},
 ]
-data = {'tag': "W1", "thickness":0.150, "length": 6.0, "height": 4.5, 'unit': 'm', "openings": openings}
+data = {
+    'tag': "W1", 
+    "thickness":0.150, 
+    "length": 60, 
+    "height": 4.5, 
+    'unit': 'm', 
+    "openings": openings,
+    "rebars": rebars
+    
+    }
+
+class Rebar(BaseModel):
+    type:str
+    unit:str
+    spacing:float    
+    length:float = 0
+    amt:int = 0
+    
+    @property
+    def data(self):
+        return Library().rebarnotes.get(self.type)
+    
+    @property
+    def set_amount(self):
+        if self.length > 1:
+            self.amt = round( self.length / self.spacing )
+        else:
+            pass
+    
+    @property
+    def bars(self):
+        if self.unit == 'm':
+            bar_length = self.data.get('standard_length').get('metric').get('value')
+            bar_weight_per_unit = self.data.get('weight').get('metric').get('value')
+            weight_per_unit = 'kg'
+
+        else:
+            bar_length = self.data.get('standard_length').get('imperial').get('value')
+            bar_weight_per_unit = self.data.get('weight').get('imperial').get('value')
+            weight_per_unit = 'lb'
+        
+        return {
+            'rebars': { "value": round((self.length * self.amt ) / bar_length), "unit": "length"},
+            'weight': { "value": round((self.length * self.amt ) * bar_weight_per_unit, 3), "unit": weight_per_unit }            
+
+        }
+
+
+    
 
 
 class BlockWall(BaseModel):
@@ -42,13 +94,13 @@ class Opening(BaseModel):
         else:
             return ( self.width + ( self.height * 2 ) ) * self.amt 
             
-       
+
 
 class Wall:
     def __init__(self, data:dict=None):
         if data:
             self.data=BlockWall( **data )
-            self.openings = [ Opening( **item ) for item in data.get('openings') ]
+            self.openings = [ Opening( **item ) for item in data.get('openings') ]            
             self.set_unit_system(self.data.unit)
             if self.units.get('length') == 'm':
                 self.cmu = {
@@ -61,6 +113,14 @@ class Wall:
                     "depth": {"unit": 'ft', "value": 0.667}
                 }
             self.cmu['area'] = round(self.cmu.get('length').get('value') * self.cmu.get('depth').get('value'),3)
+            self.rebars = {
+                "vertical": Rebar( **data.get('rebars').get('v')),
+                "horizontal": Rebar( **data.get('rebars').get('h'))
+            }
+            self.rebars['vertical'].length =  self.data.height
+            self.rebars['horizontal'].length =  self.data.length
+            self.rebars['vertical'].set_amount
+            self.rebars['horizontal'].set_amount
 
     def set_unit_system(self, unit): 
         ''' Establish or convert the system of measurement units'''       
@@ -131,4 +191,4 @@ class Wall:
 
 
 wall = Wall( data=data )
-print(wall.blocks)
+print(wall.rebars.get('horizontal').bars)

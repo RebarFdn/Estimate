@@ -972,6 +972,10 @@ class Library( Notes ):
         "diameter": {
           "imperial": {"value": 0.375, "unit": "in" },
           "metric": {"value": 0.009525, "unit": "m"}
+        },
+        "standard_length": {
+          "imperial": {"value": 29.5, "unit": "ft" },
+          "metric": {"value": 9, "unit": "m"}
         }
       },
       "m12": {
@@ -989,6 +993,10 @@ class Library( Notes ):
           "imperial": {"value": 0.500, "unit": "in" },
           "metric": {"value": 0.0127, "unit": "m"}
         },
+        "standard_length": {
+          "imperial": {"value": 29.5, "unit": "ft" },
+          "metric": {"value": 9, "unit": "m"}
+        }
       },
      
       "m16": {
@@ -1006,6 +1014,10 @@ class Library( Notes ):
           "imperial": {"value": 0.625, "unit": "in" },
           "metric": {"value": 0.015875, "unit": "m"}
         },
+        "standard_length": {
+          "imperial": {"value": 29.5, "unit": "ft" },
+          "metric": {"value": 9, "unit": "m"}
+        }
       },
       "m20": {
         "size": "#6",
@@ -1022,6 +1034,10 @@ class Library( Notes ):
           "imperial": {"value": 0.750, "unit": "in" },
           "metric": {"value": 0.01905, "unit": "m"}
         },
+        "standard_length": {
+          "imperial": {"value": 29.5, "unit": "ft" },
+          "metric": {"value": 9, "unit": "m"}
+        }
       },
     }
     def __init__(self, index:str=None):
