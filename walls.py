@@ -1,6 +1,10 @@
 # walls 
 from pydantic import BaseModel
-from elibrary import Library
+
+try:
+    from elibrary import Library
+except:
+    from modules.Estimate.elibrary import Library
 
 # DAta sources
 rebars = {
@@ -33,14 +37,8 @@ class Rebar(BaseModel):
     
     @property
     def data(self):
-        return Library().rebarnotes.get(self.type)
+        return Library().rebarnotes.get(self.type)    
     
-    @property
-    def set_amount(self):
-        if self.length > 1:
-            self.amt = round( self.length / self.spacing )
-        else:
-            pass
     
     @property
     def bars(self):
@@ -55,7 +53,7 @@ class Rebar(BaseModel):
             weight_per_unit = 'lb'
         
         return {
-            'rebars': { "value": round((self.length * self.amt ) / bar_length), "unit": "length"},
+            'rebars': { "type": f"{self.type} ( {self.data.get('insize')}inch )", "value": round((self.length * self.amt ) / bar_length), "unit": "length"},
             'weight': { "value": round((self.length * self.amt ) * bar_weight_per_unit, 3), "unit": weight_per_unit }            
 
         }
@@ -119,8 +117,8 @@ class Wall:
             }
             self.rebars['vertical'].length =  self.data.height
             self.rebars['horizontal'].length =  self.data.length
-            self.rebars['vertical'].set_amount
-            self.rebars['horizontal'].set_amount
+            self.rebars['vertical'].amt = self.data.length / self.rebars['vertical'].spacing
+            self.rebars['horizontal'].amt = self.data.height / self.rebars['horizontal'].spacing
 
     def set_unit_system(self, unit): 
         ''' Establish or convert the system of measurement units'''       
@@ -191,4 +189,4 @@ class Wall:
 
 
 wall = Wall( data=data )
-print(wall.rebars.get('horizontal').bars)
+print(wall.rebars.get('vertical').bars)
