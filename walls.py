@@ -39,7 +39,14 @@ class Rebar(BaseModel):
     def data(self):
         return Library().rebarnotes.get(self.type)    
     
-    
+    @property
+    def cut_length(self):
+        if float(self.length) < 9.0:
+            return { "value": float(self.length), "unit": self.unit }
+        else:
+            return { "value": 9.0, "unit": self.unit }
+
+
     @property
     def bars(self):
         if self.unit == 'm':
@@ -74,7 +81,8 @@ class BlockWall(BaseModel):
         return self.length * self.height 
 
 
-class Opening(BaseModel):
+class WallOpening(BaseModel):
+    wall_tag:str | None = None
     tag:str    
     width:float
     height:float
@@ -98,7 +106,7 @@ class Wall:
     def __init__(self, data:dict=None):
         if data:
             self.data=BlockWall( **data )
-            self.openings = [ Opening( **item ) for item in data.get('openings') ]            
+            self.openings = [ WallOpening( **item ) for item in data.get('openings', []) ]            
             self.set_unit_system(self.data.unit)
             if self.units.get('length') == 'm':
                 self.cmu = {
@@ -117,12 +125,16 @@ class Wall:
             }
             self.rebars['vertical'].length =  self.data.height
             self.rebars['horizontal'].length =  self.data.length
-            self.rebars['vertical'].amt = self.data.length / self.rebars['vertical'].spacing
-            self.rebars['horizontal'].amt = self.data.height / self.rebars['horizontal'].spacing
+            self.rebars['vertical'].amt = round(self.data.length / self.rebars['vertical'].spacing)
+            self.rebars['horizontal'].amt = round(self.data.height / self.rebars['horizontal'].spacing)
 
     def set_unit_system(self, unit): 
         ''' Establish or convert the system of measurement units'''       
         self.units = Library().set_unit_system(unit)
+
+    @property
+    def tag(self):
+        return self.data.tag,
 
     @property
     def length(self):
@@ -186,7 +198,8 @@ class Wall:
     
 
 
+def Test():
+    wall = Wall( data=data )
+    print(wall.rebars.get('vertical').bars)
 
-
-wall = Wall( data=data )
-print(wall.rebars.get('vertical').bars)
+#Test()

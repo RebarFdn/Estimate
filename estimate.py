@@ -8,8 +8,10 @@ from estimate_models import EstimateModel
 import datetime
 from tinydb import TinyDB, Query
 
-HOME_PATH = Path(__file__).parent
-DATA_PATH = ""
+try: 
+    from siteplan.modules.Estimate.econfig import DATA_PATH
+except:
+    from siteplan.modules.Estimate.econfig import DATA_PATH 
 
 
 class Estimate: 
@@ -29,7 +31,7 @@ class Estimate:
              
         if data :
             self.estimate = EstimateModel( **data )
-            self.meta_data["created"] = timestamp()  
+            #self.meta_data["created"] = timestamp()  
             self.meta_data["created_by"] = data.get('created_by')
             self.meta_data['properties'] = list(data.keys())              
             self.data = data
@@ -54,4 +56,4 @@ class Estimate:
     
     
     def get(self, project:str=None):
-        result = self.collection.find_one(project=project)    
+        result = self.db.collection.find_one(project=project)    

@@ -3,7 +3,7 @@ import json, math, logging
 from logging.handlers import TimedRotatingFileHandler
 from modules.estimator.schema import SlabSchema, RebarSchema
 from modules.estimator.library import Library
-from config import (LOG_PATH ,SYSTEM_LOG_PATH ,SERVER_LOG_PATH, APP_LOG_PATH )
+from siteplan.modules.Estimate.econfig import (LOG_PATH ,SYSTEM_LOG_PATH ,SERVER_LOG_PATH, APP_LOG_PATH )
 
 
 lib = Library()
