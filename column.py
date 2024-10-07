@@ -71,8 +71,8 @@ class Stirup(BaseModel):
     clm_width:float
     clm_bredth:float
     clm_height:float
-    span:float = 0.25
-    support_spacing:float = 0.1
+    span:float | None = None 
+    support_spacing:float | None = None 
     spacing:float = 0.2
 
     @property
@@ -83,20 +83,30 @@ class Stirup(BaseModel):
 
     @property
     def over_support(self):
-        return self.clm_height * self.span
+        if self.span:
+            return self.clm_height * self.span
+        return 0
 
     @property
     def stirups(self):
-        support_length = self.over_support * 2
-        support_stirups = support_length / self.support_spacing
-        main_stirups = (self.clm_height - support_length) / self.spacing
+        if self.span and self.support_spacing:
+            support_length = self.over_support * 2
+            support_stirups = support_length / self.support_spacing
+            main_stirups = (self.clm_height - support_length) / self.spacing
+            return {
+                "main": round(main_stirups), 
+                "support": round(support_stirups), 
+                "total": round(main_stirups + support_stirups),
+                "length": self.length
+                }
+        else:
+            main_stirups = round(self.clm_height / self.spacing)
+            return {
+                "main": main_stirups,                
+                "total": main_stirups,
+                "length": self.length
+                }
 
-        return {
-            "main": round(main_stirups), 
-            "support": round(support_stirups), 
-            "total": round(main_stirups + support_stirups),
-            "length": self.length
-            }
 
 
 
@@ -133,8 +143,8 @@ def test():
 
 rebars ={
     "main":{"type":"m16", "unit": "m", "length": 4.5, "amt": 4},
-    "stirup": {"type":"m10", "spacing": 0.2, "clm_width":cdata['width'],
-    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "unit": "m"} 
+    "stirup": {"type":"m10", "spacing": 0.25, "clm_width":cdata['width'],
+    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": 0.3, "support_spacing": 0.1, "unit": "m"} 
 }
 
 bars = Mainbar(**rebars['main'])  
