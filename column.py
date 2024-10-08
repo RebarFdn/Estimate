@@ -143,7 +143,7 @@ def test():
 
 rebars ={
     "main":{"type":"m16", "unit": "m", "length": 4.5, "amt": 4},
-    "stirup": {"type":"m10", "spacing": 0.25, "clm_width":cdata['width'],
+    "stirup": {"type":"m10", "spacing": 0.25 , "clm_width":cdata['width'],
     "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": 0.3, "support_spacing": 0.1, "unit": "m"} 
 }
 
