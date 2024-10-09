@@ -1,6 +1,5 @@
 # Column.py
 from pydantic import BaseModel
-
 try:
     from elibrary import Library
 except:
@@ -26,6 +25,8 @@ class Column(BaseModel):
     @property
     def surface(self):
         return self.girth * self.height
+
+   
     
 
 class Mainbar(BaseModel):
@@ -45,22 +46,19 @@ class Mainbar(BaseModel):
         else:
             return { "value": 9.0, "unit": self.unit }
 
-
     @property
     def bars(self):
         if self.unit == 'm':
             bar_length = self.data.get('standard_length').get('metric').get('value')
             bar_weight_per_unit = self.data.get('weight').get('metric').get('value')
             weight_per_unit = 'kg'
-
         else:
             bar_length = self.data.get('standard_length').get('imperial').get('value')
             bar_weight_per_unit = self.data.get('weight').get('imperial').get('value')
-            weight_per_unit = 'lb'
-        
+            weight_per_unit = 'lb'        
         return {
             'rebars': { "type": f"{self.type} ( {self.data.get('insize')}inch )", "value": round((self.length * self.amt ) / bar_length), "unit": "length"},
-            'weight': { "value": round((self.length * self.amt ) * bar_weight_per_unit, 3), "unit": weight_per_unit }            
+            'weight': { "value": round((self.length * self.amt ) * bar_weight_per_unit, 3), "unit": weight_per_unit }           
 
         }
 
@@ -74,6 +72,10 @@ class Stirup(BaseModel):
     span:float | None = None 
     support_spacing:float | None = None 
     spacing:float = 0.2
+
+    @property
+    def data(self):
+        return Library().rebarnotes.get(self.type)  
 
     @property
     def length(self):
@@ -105,11 +107,44 @@ class Stirup(BaseModel):
                 "main": main_stirups,                
                 "total": main_stirups,
                 "length": self.length
-                }
+                }        
+
+    @property
+    def bars(self):
+        if self.unit == 'm':
+            bar_length = self.data.get('standard_length').get('metric').get('value')
+            bar_weight_per_unit = self.data.get('weight').get('metric').get('value')
+            weight_per_unit = 'kg'
+        else:
+            bar_length = self.data.get('standard_length').get('imperial').get('value')
+            bar_weight_per_unit = self.data.get('weight').get('imperial').get('value')
+            weight_per_unit = 'lb'        
+        return {
+            'rebars': { "type": f"{self.type} ( {self.data.get('insize')}inch )", "value": round((self.length * self.stirups.get('total') ) / bar_length), "unit": "length"},
+            'weight': { "value": round((self.length * self.stirups.get('total') ) * bar_weight_per_unit, 3), "unit": weight_per_unit }            
+
+        }
 
 
 
+class ReinforcedConcreteColumn:
+    def __init__(self, data:dict=None):
+        
+        if data:
+            self.data = Column( **data )
+            self.mainbars = Mainbar( **data['rebars']['main'])
+            self.stirups = Stirup( **data['rebars']['stirup'])              
+            self.set_unit_system(self.data.unit)
 
+    def set_unit_system(self, unit): 
+        ''' Establish or convert the system of measurement units'''       
+        self.units = Library().set_unit_system(unit)
+    
+
+    @property
+    def formwork(self):
+        return {"value": self.data.surface * self.data.amt, "unit": self.units.get('area')}
+            
 
 
     
@@ -124,14 +159,20 @@ cdata = dict(
     )
 
 
+rebars ={
+    "main":{"type":"m16", "unit": "m", "length": 4.5, "amt": 4},
+    "stirup": {"type":"m10", "spacing": 0.25 , "clm_width":cdata['width'],
+    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": .25, "support_spacing": 0.1, "unit": "m"} 
+}
+cdata['rebars'] = rebars
+
 def test():    
-    column = Column(**cdata)
+    column = ReinforcedConcreteColumn( data=cdata )
     
     data = {
-        "column": column.model_dump(),
-        "volume": column.volume,
-        "girth": column.girth,
-        "surface": column.surface
+        "column": column.data.model_dump(),
+        "bars": {'main': column.mainbars, 'stirups': column.stirups},       
+        "formwork": column.formwork
         
 
 
@@ -139,19 +180,6 @@ def test():
     print(data)
 
 
-
-
-rebars ={
-    "main":{"type":"m16", "unit": "m", "length": 4.5, "amt": 4},
-    "stirup": {"type":"m10", "spacing": 0.25 , "clm_width":cdata['width'],
-    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": 0.3, "support_spacing": 0.1, "unit": "m"} 
-}
-
-bars = Mainbar(**rebars['main'])  
-stirup = Stirup(**rebars['stirup'])
-
-print(bars.bars)
-print(stirup.stirups)
 
 if __name__ == '__main__':
     test()
