@@ -1,5 +1,6 @@
 # Column.py
-from pydantic import BaseModel
+import json
+from pydantic import BaseModel, Field
 try:
     from elibrary import Library
 except:
@@ -63,15 +64,16 @@ class Mainbar(BaseModel):
         }
 
 
-class Stirup(BaseModel):
+class Stirup(BaseModel):    
     type:str
     unit:str
-    clm_width:float
-    clm_bredth:float
+    clm_width:float 
+    clm_bredth:float 
     clm_height:float
     span:float | None = None 
     support_spacing:float | None = None 
     spacing:float = 0.2
+    
 
     @property
     def data(self):
@@ -127,7 +129,8 @@ class Stirup(BaseModel):
 
 
 
-class ReinforcedConcreteColumn:
+class RCColumn:
+    """ ReinforcedConcreteColumn """
     def __init__(self, data:dict=None):
         
         if data:
@@ -140,11 +143,61 @@ class ReinforcedConcreteColumn:
         ''' Establish or convert the system of measurement units'''       
         self.units = Library().set_unit_system(unit)
     
+    @property
+    def amt(self):
+        return {'value': self.data.amt, 'unit': 'each'}
+
+    @property
+    def bredth(self):
+        return {'value': self.data.bredth, 'unit': self.units.get('length')}
+
+    @property
+    def width(self):
+        return {'value': self.data.width, 'unit': self.units.get('length')}
+
+    @property
+    def height(self):
+        return {'value': self.data.height, 'unit': self.units.get('length')}
 
     @property
     def formwork(self):
         return {"value": self.data.surface * self.data.amt, "unit": self.units.get('area')}
-            
+
+    @property
+    def concrete(self):
+        vol = self.data.volume * self.data.amt
+        
+        return {'value': vol, 'unit': self.units.get('volume')}
+        
+    @property
+    def rebars(self):
+        exclude = { "clm_width": True, "clm_bredth": True, "clm_height": True }
+        if not self.stirups.span or not self.stirups.support_spacing:
+            exclude["span"] = True
+            exclude["support_spacing"] = True
+        main_bars = json.loads(json.dumps(self.mainbars.bars))
+        stirups = json.loads(json.dumps(self.stirups.bars))
+        main_bars['rebars']['value'] = self.mainbars.bars['rebars']['value'] * self.data.amt # calucale the total amount of bars
+        main_bars['weight']['value'] = self.mainbars.bars['weight']['value'] * self.data.amt
+
+        stirups['rebars']['value'] = self.stirups.bars['rebars']['value'] * self.data.amt # calucale the total amount of bars
+        stirups['weight']['value'] = self.stirups.bars['weight']['value'] * self.data.amt
+        main_bars['data'] = self.mainbars.model_dump()
+        stirups['data'] = self.stirups.model_dump(exclude=exclude)
+        return {
+            'main': main_bars,
+            'stirups': stirups            
+        }
+
+    @property
+    def report(self):
+        
+        return {
+        "column": self.data.model_dump(),         
+        "rebars": self.rebars,     
+        "formwork": self.formwork,
+        "concrete": self.concrete
+    }
 
 
     
@@ -162,22 +215,15 @@ cdata = dict(
 rebars ={
     "main":{"type":"m16", "unit": "m", "length": 4.5, "amt": 4},
     "stirup": {"type":"m10", "spacing": 0.25 , "clm_width":cdata['width'],
-    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": .25, "support_spacing": 0.1, "unit": "m"} 
+    "clm_bredth":cdata['bredth'], "clm_height":cdata['height'], "span": 0.25, "support_spacing": 0.11, "unit": "m"} 
 }
 cdata['rebars'] = rebars
 
 def test():    
-    column = ReinforcedConcreteColumn( data=cdata )
+    column = RCColumn( data=cdata )
     
-    data = {
-        "column": column.data.model_dump(),
-        "bars": {'main': column.mainbars, 'stirups': column.stirups},       
-        "formwork": column.formwork
-        
-
-
-    }
-    print(data)
+    
+    print(column.report)
 
 
 

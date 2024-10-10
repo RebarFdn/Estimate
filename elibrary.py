@@ -1087,7 +1087,7 @@ class Library( Notes ):
           return {"result": "Failed" } 
     
 
-    async def convert_bar(self, bar:str=None):
+    def convert_bar(self, bar:str=None):
           converter = {
               "m6": "1/4",
               "m10": "3/8",
