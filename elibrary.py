@@ -1040,6 +1040,32 @@ class Library( Notes ):
         }
       },
     }
+    materials:dict= {
+      "cement": { "density": (1440, 'kg/m3') },
+      "fine_agg": { "density": (1680, 'kg/m3') },
+      "course_agg": { "density": (1540, 'kg/m3') },
+    }
+    concrete_types:dict = {
+       'legend': {'cs': 'Compressive Strength', 'mr': 'Mix Ratio' },
+       'm5': {'type': "M5", 'mix_ratio': '1:5:10', 'cs':{'metric': (5, 'MPa'), 'imperial':( 725, 'psi')}},
+       'm7.5': {'type': "M7.5", 'mix_ratio': '1:4:8', 'cs':{'metric': (7.5, 'MPa'), 'imperial':( 1087, 'psi')}},
+       'm10': {'type': "M10", 'mix_ratio': '1:3:6', 'cs':{'metric': (10, 'MPa'), 'imperial':( 1450, 'psi')}},
+       'm15': {'type': "M15", 'mix_ratio': '1:2:4', 'cs':{'metric': (15, 'MPa'), 'imperial':( 2175, 'psi')}},
+       'm20': {'type': "M20", 'mix_ratio': '1:1.5:3', 'cs':{'metric': (20, 'MPa'), 'imperial':( 2900, 'psi')}},
+       'm25': {'type': "M25", 'mix_ratio': '1:1:2', 'cs':{'metric': (25, 'MPa'), 'imperial':( 3625, 'psi')}},
+       'm30': {'type': "M30", 'mix_ratio': '1:0.75:1.5', 'cs':{'metric': (30, 'MPa'), 'imperial':( 4350, 'psi')}},
+       'm35': {
+          'type': "M35", 'mix_ratio': '1:0.5:1', 
+          'cs':{'metric': (35, 'MPa'), 'imperial':( 5075, 'psi')},
+          'material': {
+             'cement': (425.56, 'kg/m3'),
+             'fine_agg': (664.92, 'kg/m3'),
+             'course_agg': (1131.98, 'kg/m3'),
+             'water': (191.5, 'liters/m3'),
+
+             }
+          },
+    }
     def __init__(self, index:str=None):
       if index:        
         self.set_library(index)
@@ -1132,3 +1158,19 @@ def test():
   print( lib.set_unit_system('mm') )
 
 #test()
+
+#print(Library().concrete_types.get('m35'))
+
+
+def c_mat(ratio):
+    vol = 1.57 # m3
+    rt = [float(item) for item in  ratio.split(':')]
+    rf = sum(rt)
+    cement = (rt[0] / rf) * vol,
+    fine_agg = ( rt[1] / rf ) * vol,
+    coarse_agg = ( rt[2] / rf ) * vol
+    return vol, rt, rf, cement[0] * 1440
+   
+dc = c_mat('1:1.5:3')
+
+print(dc)
