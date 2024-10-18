@@ -1046,24 +1046,26 @@ class Library( Notes ):
       "course_agg": { "density": (1540, 'kg/m3') },
     }
     concrete_types:dict = {
-       'legend': {'cs': 'Compressive Strength', 'mr': 'Mix Ratio' },
-       'm5': {'type': "M5", 'mix_ratio': '1:5:10', 'cs':{'metric': (5, 'MPa'), 'imperial':( 725, 'psi')}},
-       'm7.5': {'type': "M7.5", 'mix_ratio': '1:4:8', 'cs':{'metric': (7.5, 'MPa'), 'imperial':( 1087, 'psi')}},
-       'm10': {'type': "M10", 'mix_ratio': '1:3:6', 'cs':{'metric': (10, 'MPa'), 'imperial':( 1450, 'psi')}},
-       'm15': {'type': "M15", 'mix_ratio': '1:2:4', 'cs':{'metric': (15, 'MPa'), 'imperial':( 2175, 'psi')}},
-       'm20': {'type': "M20", 'mix_ratio': '1:1.5:3', 'cs':{'metric': (20, 'MPa'), 'imperial':( 2900, 'psi')}},
-       'm25': {'type': "M25", 'mix_ratio': '1:1:2', 'cs':{'metric': (25, 'MPa'), 'imperial':( 3625, 'psi')}},
-       'm30': {'type': "M30", 'mix_ratio': '1:0.75:1.5', 'cs':{'metric': (30, 'MPa'), 'imperial':( 4350, 'psi')}},
+       
+       'legend': {'cs': 'Compressive Strength', 'mr': 'Mix Ratio' ,"wet_volume_factor": 1.54, 'bag_weight': (42.5, 'kg')},
+       'm5': {'type': "M5", 'mix_ratio': '1:5:10', 'cs':{'metric': (5, 'MPa'), 'imperial':( 725, 'psi')},
+              'material': {'cement': (137.4912, 'kg/m3'), 'fine_agg': (778.3776, 'kg/m3'), 'course_agg': (1472.625, 'kg/m3')}},
+       'm7.5': {'type': "M7.5", 'mix_ratio': '1:4:8', 'cs':{'metric': (7.5, 'MPa'), 'imperial':( 1087, 'psi')},
+                'material': {'cement': (170.7552, 'kg/m3'), 'fine_agg': (768.3984, 'kg/m3'), 'course_agg': (1449.063, 'kg/m3')}},
+       'm10': {'type': "M10", 'mix_ratio': '1:3:6', 'cs':{'metric': (10, 'MPa'), 'imperial':( 1450, 'psi')},
+               'material': {'cement': (221.76, 'kg/m3'), 'fine_agg': (748.44, 'kg/m3'), 'course_agg': (1413.72, 'kg/m3')}},
+       'm15': {'type': "M15", 'mix_ratio': '1:2:4', 'cs':{'metric': (15, 'MPa'), 'imperial':( 2175, 'psi')},
+               'material': {'cement': (317.1168, 'kg/m3'), 'fine_agg': (713.5128, 'kg/m3'), 'course_agg': (1345.39, 'kg/m3')}},
+       'm20': {'type': "M20", 'mix_ratio': '1:1.5:3', 'cs':{'metric': (20, 'MPa'), 'imperial':( 2900, 'psi')},
+               'material': {'cement': (403.603, 'kg/m3'), 'fine_agg': (681.0804, 'kg/m3'), 'course_agg': (1284.129, 'kg/m3')}},
+       'm25': {'type': "M25", 'mix_ratio': '1:1:2', 'cs':{'metric': (25, 'MPa'), 'imperial':( 3625, 'psi')},
+               'material': {'cement': (554.4, 'kg/m3'), 'fine_agg': (623.7, 'kg/m3'), 'course_agg': (1178.1, 'kg/m3')}},
+       'm30': {'type': "M30", 'mix_ratio': '1:0.75:1.5', 'cs':{'metric': (30, 'MPa'), 'imperial':( 4350, 'psi')},
+               'material': {'cement': (683.0208, 'kg/m3'), 'fine_agg': (576.2988, 'kg/m3'), 'course_agg': (1088.5644, 'kg/m3')}},
        'm35': {
           'type': "M35", 'mix_ratio': '1:0.5:1', 
           'cs':{'metric': (35, 'MPa'), 'imperial':( 5075, 'psi')},
-          'material': {
-             'cement': (425.56, 'kg/m3'),
-             'fine_agg': (664.92, 'kg/m3'),
-             'course_agg': (1131.98, 'kg/m3'),
-             'water': (191.5, 'liters/m3'),
-
-             }
+          'material': {'cement': (887.04, 'kg/m3'), 'fine_agg': (498.96, 'kg/m3'), 'course_agg': (942.48, 'kg/m3')}
           },
     }
     def __init__(self, index:str=None):
@@ -1159,18 +1161,4 @@ def test():
 
 #test()
 
-#print(Library().concrete_types.get('m35'))
-
-
-def c_mat(ratio):
-    vol = 1.57 # m3
-    rt = [float(item) for item in  ratio.split(':')]
-    rf = sum(rt)
-    cement = (rt[0] / rf) * vol,
-    fine_agg = ( rt[1] / rf ) * vol,
-    coarse_agg = ( rt[2] / rf ) * vol
-    return vol, rt, rf, cement[0] * 1440
-   
-dc = c_mat('1:1.5:3')
-
-print(dc)
+#print(Library().concrete_types.get('m15'))

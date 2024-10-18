@@ -14,6 +14,7 @@ class Column(BaseModel):
     bredth:float
     height:float
     amt:int
+    ctype:str
 
     @property
     def volume(self):
@@ -135,6 +136,7 @@ class RCColumn:
         
         if data:
             self.data = Column( **data )
+            data['rebars']['main']["length"] = self.data.height
             self.mainbars = Mainbar( **data['rebars']['main'])
             self.stirups = Stirup( **data['rebars']['stirup'])              
             self.set_unit_system(self.data.unit)
@@ -142,6 +144,10 @@ class RCColumn:
     def set_unit_system(self, unit): 
         ''' Establish or convert the system of measurement units'''       
         self.units = Library().set_unit_system(unit)
+    
+    @property
+    def concrete_type(self):
+        return self.data.ctype
     
     @property
     def amt(self):
@@ -161,13 +167,28 @@ class RCColumn:
 
     @property
     def formwork(self):
-        return {"value": self.data.surface * self.data.amt, "unit": self.units.get('area')}
+        return {"value": round(self.data.surface * self.data.amt,2), "unit": self.units.get('area')}
 
     @property
     def concrete(self):
-        vol = self.data.volume * self.data.amt
+        dry_vol = self.data.volume * self.data.amt
+        data = Library().concrete_types.get(self.concrete_type)
+        legend = Library().concrete_types.get('legend')
+        wet_volume_factor = legend.get("wet_volume_factor")
+        bag_weight = legend.get("bag_weight")
         
-        return {'value': vol, 'unit': self.units.get('volume')}
+        report = {
+           'dry_volume': {'value': dry_vol, 'unit': self.units.get('volume')},
+           "wet_volume":  {'value': dry_vol * wet_volume_factor,  'unit': self.units.get('volume')},
+           "cement": {'value': round(data.get('material').get('cement')[0] * dry_vol,3), 'unit': 'kg',
+                      "bag": {'value': 0, 'unit': 'bag'}
+                      },
+           "fine_agg": {'value': round(data.get('material').get('fine_agg')[0] * dry_vol,3), 'unit': 'kg'},
+           "course_agg": {'value': round(data.get('material').get('course_agg')[0] * dry_vol,3), 'unit': 'kg'},
+           "water": {'value': round(data.get('material').get('water',(190, 'liter'))[0] * dry_vol,3), 'unit': 'liters'}
+        }
+        report['cement']['bag']['value'] = round((report['cement']['value'] / bag_weight[0]) + 0.5)
+        return report
         
     @property
     def rebars(self):
@@ -184,6 +205,10 @@ class RCColumn:
         stirups['weight']['value'] = self.stirups.bars['weight']['value'] * self.data.amt
         main_bars['data'] = self.mainbars.model_dump()
         stirups['data'] = self.stirups.model_dump(exclude=exclude)
+        stirups['data']['cut_length'] = round(self.stirups.length,2)
+        stirups['data']['amount'] = self.stirups.stirups.get('total')
+        
+        
         return {
             'main': main_bars,
             'stirups': stirups            
@@ -197,18 +222,19 @@ class RCColumn:
         "rebars": self.rebars,     
         "formwork": self.formwork,
         "concrete": self.concrete
-    }
+        }
 
 
     
 
 cdata = dict(   
     id = 'C121',
-    height= 3.800,
+    height= 6.800,
     width=.402,
     bredth=.450,
-    amt=3,
-    unit='m'    
+    amt=5,
+    unit='m',
+    ctype='m15'   
     )
 
 
