@@ -958,6 +958,27 @@ class Library( Notes ):
       ]
     }
     rebarnotes:dict = {
+       "m6": {
+        "size": "#2",
+        "insize": "1/4",
+        "area": {
+          "imperial": {"value": 0.10,"unit": "in2"},
+          "metric": {"value": 0.000064516,"unit": "m2"}
+        },
+        "weight": {
+          "imperial": {"value": 0.334, "unit": "lb/ft"},
+          "metric": {"value": 0.49704675, "unit": "kg/m"}
+        },
+        "diameter": {
+          "imperial": {"value": 0.2500, "unit": "in" },
+          "metric": {"value": 0.00635, "unit": "m"}
+        },
+        "standard_length": {
+          "imperial": {"value": 29.5, "unit": "ft" },
+          "metric": {"value": 9, "unit": "m"}
+        }
+      },
+     
       "m10": {
         "size": "#3",
         "insize": "3/8",
